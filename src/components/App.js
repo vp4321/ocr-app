@@ -1,7 +1,7 @@
 
 import React from "react"
 import Signup from "./SignUp"
-import { Container } from "react-bootstrap"
+// import { Container } from "react-bootstrap"
 import { AuthProvider } from "../contexts/AuthContext"
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
 import Dashboard from "./Dashboard"
@@ -12,11 +12,12 @@ import PrivateRoute from "./PrivateRoute"
 
 function App() {
   return (
-    <Container
-      className="d-flex align-items-center justify-content-center"
-      style={{ minHeight: "100vh" }}
-    >
-      <div className="w-100" style={{ maxWidth: "400px" }}>
+    // <Container
+    //   // className="d-flex align-items-center justify-content-center"
+    //   style={{ minHeight: "100vh" }}
+    // >
+    <>
+      {/* <div className="w-100" style={{ maxWidth: "400px" }}> */}
         <Router>
           <AuthProvider>
             <Switch>
@@ -28,8 +29,9 @@ function App() {
             </Switch>
           </AuthProvider>
         </Router>
-      </div>
-    </Container>
+      {/* </div> */}
+      </>
+    // </Container>
   )
 }
 

@@ -27,8 +27,8 @@
   }
   
   .ocr-button {
-    width: 6rem;
-    height: 2rem;
+    width: 15rem;
+    height: 5rem;
     color: white;
     background: #3f4257;
     border-radius: 2rem;
@@ -39,6 +39,7 @@
     padding: 0 1rem;
     cursor: pointer;
     transition: 0.2s linear;
+    font-size: 1.5rem;
   }
   
   .ocr-button:hover {
@@ -52,7 +53,50 @@
     list-style-type: none;
     margin: 2rem;
   }
-  
+
+  @media (max-width:920px){
+    .ocr-list {
+      background: white;
+      max-width: 100%;
+      border-radius: 1rem;
+      list-style-type: none;
+      margin: 2rem;
+    }
+  }
+  .fileContainer{
+    box-shadow: none!important;
+  }
+  .fileContainer p {
+    font-size: 20px;
+    margin: 10px 0 10px;
+}
+.fileContainer .uploadIcon {
+  width: 100px;
+  height: 100px;
+}
+.fileContainer .chooseFileButton {
+  font-size: 1.5rem!important;
+  height: 5rem;
+}
+.dropdownMenu{
+  min-width: 3rem;
+}
+.save-btn{
+
+    height: 5rem;
+    width: 5rem;
+    color:aliceblue;
+    background: #3f4257;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+    cursor: pointer;
+    font-size: 1.5rem;
+}
   .ocr-element {
     color: #3f4257;
     margin: 1rem;
