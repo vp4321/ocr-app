@@ -1,15 +1,26 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Tesseract from 'tesseract.js'
 import ImageUploader from 'react-images-upload'
 import ClipLoader from 'react-spinners/ClipLoader'
 import './Dashboard.css';
+import db from '../firebase'
+import firebase from 'firebase/app';
+import app from '../firebase'
 import { useAuth } from "../contexts/AuthContext"
 import { Link, useHistory } from "react-router-dom"
 import { Card, Button, Alert, Navbar, NavDropdown, Nav } from "react-bootstrap"
 
 const App = () => {
+
+  useEffect(() => {
+    db.collection('texts').onSnapshot(snapshot => {
+      console.log(snapshot);
+    })
+  }, [])
+
   const [picUrl, setPicUrl] = useState([]);
   const [ocrText, setOcrText] = useState([]);
+  const [title, setTitle] = useState('')
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("")
@@ -31,13 +42,35 @@ const App = () => {
     setPicUrl(pictureURL);
 
   }
+
+
+  const saveText = (event) => {
+    event.preventDefault();
+    // console.log(title)
+    db.collection("texts").add({
+      text: ocrText,
+      title: "title",
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+
+    })
+      .then(() => {
+        console.log("Document successfully written!");
+      })
+      .catch((error) => {
+        console.error("Error writing document: ", error);
+      });
+    setTitle('');
+    setOcrText([]);
+  }
   const runOcr = () => {
+    setIsLoading(true);
     picUrl.forEach((picture) => {
       Tesseract.recognize(picture, "eng").then(({ data: { text } }) => {
         setOcrText((oldarray) => [...oldarray, text]);
+        setIsLoading(false)
       })
     })
-    setIsLoading(true);
+
   }
 
   return (
@@ -85,11 +118,11 @@ const App = () => {
           maxFileSize={5242880}
         />
         {
-          picUrl.length > 0 ? (
+          picUrl.length > 0 && !isLoading ? (
             <div className="ocr-button mb-3" onClick={runOcr} >
               Generate Text
             </div>
-          ):null
+          ) : (picUrl.length > 0 ? (<ClipLoader color="#000" loading={isLoading} size={100} />) : null)
         }
 
 
@@ -97,7 +130,7 @@ const App = () => {
           ocrText.length > 0 ?
             (
               <>
-                <ul className="ocr-list" contentEditable="true">
+                <ul className="ocr-list" contentEditable="true" suppressContentEditableWarning={true}>
                   {
                     ocrText.map((ot) => (
                       <li className="ocr-element" key={ocrText.indexOf(ot)}>
@@ -107,13 +140,13 @@ const App = () => {
                     ))
                   }
                 </ul>
-                <input type="text" placeholder="Give some title" required />
-                <i className="far fa-save save-btn"></i>
+                <form>
+                  <input type="text" placeholder="Give some title" value={title} onChange={event => setTitle(event.target.value)} />
+                  <br />
+                  <button type="submit" onClick={saveText} > <i className="far fa-save save-btn"></i></button>
+                </form>
               </>
-            ) : (<>
-              <ClipLoader color="#000" loading={isLoading} size={100} />
-
-            </>)
+            ) : null
 
         }
       </div>
