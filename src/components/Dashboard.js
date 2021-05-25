@@ -9,19 +9,15 @@ import app from '../firebase'
 import { useAuth } from "../contexts/AuthContext"
 import { Link, useHistory } from "react-router-dom"
 import { Card, Button, Alert, Navbar, NavDropdown, Nav } from "react-bootstrap"
+import SavedItems from './SavedItems'
 
 const App = () => {
 
-  useEffect(() => {
-    db.collection('texts').onSnapshot(snapshot => {
-      console.log(snapshot);
-    })
-  }, [])
-
   const [picUrl, setPicUrl] = useState([]);
   const [ocrText, setOcrText] = useState([]);
-  const [title, setTitle] = useState('')
-
+  const [para, setPara] = useState('');
+  const [index, setIndex] = useState(-1);
+  let [text, setText] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("")
   const { currentUser, logout } = useAuth()
@@ -40,36 +36,57 @@ const App = () => {
 
   const onDrop = (_, pictureURL) => {
     setPicUrl(pictureURL);
+  }
+
+  const displayText = () => {
+    db.collection('users').doc(currentUser.uid).get().then((res) => {
+      console.log(res.data().title)
+    })
 
   }
 
-
   const saveText = (event) => {
     event.preventDefault();
-    // console.log(title)
-    db.collection("texts").add({
-      text: ocrText,
-      title: "title",
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    db.collection('users').doc(currentUser.uid).get().then((res) => {
+      console.log(res.data());
+      if (res.exists) {
+        setText(res.data().arr.text);
+        db.collection('users').doc(currentUser.uid).update({
+            arr: 
+            [{text: para,
+                id: index}]
+        }, { merge: true })
+      }
+      else {
+        db.collection("users").doc(currentUser.uid).set({
+            text: ocrText,
+            id: index
+        })
+          .then(() => {
+            console.log("Document successfully written!");
+          })
+          .catch((error) => {
+            console.error("Error writing document: ", error);
+          });
 
+      }
     })
-      .then(() => {
-        console.log("Document successfully written!");
-      })
-      .catch((error) => {
-        console.error("Error writing document: ", error);
-      });
-    setTitle('');
-    setOcrText([]);
+
+    // setOcrText([]);
   }
   const runOcr = () => {
     setIsLoading(true);
     picUrl.forEach((picture) => {
       Tesseract.recognize(picture, "eng").then(({ data: { text } }) => {
+        // setOcrText((old) => (old.concat("\n"+ text)));
         setOcrText((oldarray) => [...oldarray, text]);
+        setPara((s)=>{
+          s.concat('\n'+ ocrText)
+        })
         setIsLoading(false)
       })
     })
+
 
   }
 
@@ -95,20 +112,20 @@ const App = () => {
       <div className="center">
 
         {/* <Card>
-          <Card.Body>
-            <h2 className="text-center mb-4">Profile</h2>
-            {error && <Alert variant="danger">{error}</Alert>}
-            <strong>Email:</strong> {currentUser.email}
-            <Link to="/update-profile" className="btn btn-primary w-100 mt-3">
-              Update Profile
-          </Link>
-          </Card.Body>
-        </Card> */}
-        {/* <div className="w-100 text-center mt-2">
-          <Button variant="link" onClick={handleLogout}>
-            Log Out
-        </Button>
-        </div> */}
+            <Card.Body>
+              <h2 className="text-center mb-4">Profile</h2>
+              {error && <Alert variant="danger">{error}</Alert>}
+              <strong>Email:</strong> {currentUser.email}
+              <Link to="/update-profile" className="btn btn-primary w-100 mt-3">
+                Update Profile
+            </Link>
+            </Card.Body>
+         </Card> */}
+          {/* <div className="w-100 text-center mt-2">
+            <Button variant="link" onClick={handleLogout}>
+              Log Out
+          </Button>
+          </div> */}
         <ImageUploader
           withIcon={true}
           withPreview={true}
@@ -118,11 +135,11 @@ const App = () => {
           maxFileSize={5242880}
         />
         {
-          picUrl.length > 0 && !isLoading ? (
+          (picUrl && picUrl.length>0 && !isLoading )? (
             <div className="ocr-button mb-3" onClick={runOcr} >
               Generate Text
             </div>
-          ) : (picUrl.length > 0 ? (<ClipLoader color="#000" loading={isLoading} size={100} />) : null)
+          ) : (( picUrl && picUrl.length>0) ? (<ClipLoader color="#000" loading={isLoading} size={100} />) : null)
         }
 
 
@@ -132,16 +149,14 @@ const App = () => {
               <>
                 <ul className="ocr-list" contentEditable="true" suppressContentEditableWarning={true}>
                   {
-                    ocrText.map((ot) => (
-                      <li className="ocr-element" key={ocrText.indexOf(ot)}>
-                        <strong>{ocrText.indexOf(ot) + 1}-</strong>
-                        {ot}
+
+                      <li className="ocr-element">
+                        {ocrText}
                       </li>
-                    ))
+
                   }
                 </ul>
                 <form>
-                  <input type="text" placeholder="Give some title" value={title} onChange={event => setTitle(event.target.value)} />
                   <br />
                   <button type="submit" onClick={saveText} > <i className="far fa-save save-btn"></i></button>
                 </form>
@@ -149,6 +164,8 @@ const App = () => {
             ) : null
 
         }
+        <button type="submit" onClick={displayText} > Display</button>
+        <SavedItems index={index}/>
       </div>
     </>
   )
