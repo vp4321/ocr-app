@@ -7,6 +7,7 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom"
 import Dashboard from "./Dashboard"
 import Login from "./Login"
 import PrivateRoute from "./PrivateRoute"
+import SavedItems from "./SavedItems"
 // import ForgotPassword from "./ForgotPassword"
 // import UpdateProfile from "./UpdateProfile"
 
@@ -22,6 +23,7 @@ function App() {
           <AuthProvider>
             <Switch>
               <PrivateRoute exact path="/" component={Dashboard} />
+              <PrivateRoute path="/saved-items" component={SavedItems} />
               {/* <PrivateRoute path="/update-profile" component={UpdateProfile} /> */}
               <Route path="/signup" component={Signup} />
               <Route path="/login" component={Login} />

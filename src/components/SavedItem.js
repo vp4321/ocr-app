@@ -1,45 +1,45 @@
 import React, { useState } from 'react'
 import './SavedItem.css'
+import $ from 'jquery';
 import { useAuth } from "../contexts/AuthContext"
 import db from '../firebase'
 
-const SavedItem = ({ txt ,index }) => {
+const SavedItem = ({ txt, id }) => {
 
     const [updateText, setUpdateText] = useState(txt);
-    const [obj, setObj] = useState({});
     const { currentUser } = useAuth()
+    const onCopy = (event) => {
 
-    const onUpdate = () => {
+        var el = $("."+id);
+        console.log(el)
+            el.select();
+            document.execCommand('copy');
         
-        db.collection('users').doc(currentUser.uid).get().then((res) => {
-            console.log(res.data())
-            setObj(res.data().filter((object)=>{
-                return object.id ===index;
-            }))
-            setObj({text:updateText,id:index})
-            db.collection('users').doc(currentUser.uid).update({
-                textObj: obj
-            }, { merge: true })
-        })
     }
-    const onDelete = () => {
-        db.collection('users').doc(currentUser.uid).get().then((res) => {
-            setObj(res.data().textObj.filter((object)=>{
-                return object.id ===index;
-            }))
-            db.collection('users').doc(currentUser.uid).update({
-                textObj: {
-                    text: updateText,
-                    id: index
+
+    const onDelete = (event) => {
+        db.collection('users').doc(currentUser.uid).get().then(res => {
+            let textArray = res.data().textArr;
+            let ind, id;
+            for (let i = 0; i < textArray.length; i++) {
+                if (id === textArray[i].id) {
+                    ind = i;
+                    break;
                 }
-            }, { merge: true })
-        })
+            }
+            textArray.splice(ind, 1)
+            db.collection('users').doc(currentUser.uid).update({
+                textArr: textArray
+            });
+        });
     }
     return (
-        <div>
-            <textarea cols="80" contentEditable="true" value={updateText} suppressContentEditableWarning={true} onChange={(e)=>{setUpdateText(e.target.value)}}></textarea>
-            <button type="submit" onClick={onUpdate}> Update</button>
-            <button type="submit" onClick={onDelete}> Delete </button>
+        <div className="col-lg-6 item">
+            <textarea className={id} cols="20" rows="10" contentEditable="true" value={updateText} suppressContentEditableWarning={true} onChange={(e) => { setUpdateText(e.target.value) }}></textarea>
+            <div>
+            <button id={id} className="delete" type="submit" onClick={onCopy}> <i className="fas fa-copy save-btn"></i> </button>
+            <button className="delete" type="submit" onClick={onDelete}> <i className="far fa-trash-alt del-btn"></i> </button>
+            </div>
         </div>
     )
 }

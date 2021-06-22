@@ -10,14 +10,16 @@ import { useAuth } from "../contexts/AuthContext"
 import { Link, useHistory } from "react-router-dom"
 import { Card, Button, Alert, Navbar, NavDropdown, Nav } from "react-bootstrap"
 import SavedItems from './SavedItems'
+import NavBar from './NavBar'
 
 const App = () => {
 
   const [picUrl, setPicUrl] = useState([]);
   const [ocrText, setOcrText] = useState([]);
-  const [para, setPara] = useState('');
-  const [index, setIndex] = useState(-1);
-  let [text, setText] = useState([]);
+  let [para, setPara] = useState('');
+  const [index, setIndex] = useState(0);
+  const [textArr, setTextArr] = useState([{}]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("")
   const { currentUser, logout } = useAuth()
@@ -38,29 +40,47 @@ const App = () => {
     setPicUrl(pictureURL);
   }
 
-  const displayText = () => {
-    db.collection('users').doc(currentUser.uid).get().then((res) => {
-      console.log(res.data().title)
-    })
 
-  }
+//   const deleteText = (event)=>{
+//     event.preventDefault();
+//       db.collection('users').doc(currentUser.uid).get().then(res => {
+//       let textArray = res.data().textArr;
+//       let ind,id;
+//       for(let i=0; i < textArray.length; i++) {
+//           if(id === textArray[i].id) {
+//               ind=i;
+//               break;
+//           }
+//       }
+//       textArray.splice(ind, 1)
+//       db.collection('users').doc(currentUser.uid).update({
+//           textArr: textArray
+//       });
+//   });
+// }
+
 
   const saveText = (event) => {
     event.preventDefault();
     db.collection('users').doc(currentUser.uid).get().then((res) => {
-      console.log(res.data());
       if (res.exists) {
-        setText(res.data().arr.text);
+
+        setIndex(res.data().textArr.length);
+        let  arr = [...res.data().textArr,{
+          text: para,
+          id: res.data().textArr.length
+        }]
+        
         db.collection('users').doc(currentUser.uid).update({
-            arr: 
-            [{text: para,
-                id: index}]
-        }, { merge: true })
+          textArr: arr
+        })
       }
       else {
         db.collection("users").doc(currentUser.uid).set({
-            text: ocrText,
-            id: index
+          textArr:[ {
+            text: para,
+            id: 0
+          }]
         })
           .then(() => {
             console.log("Document successfully written!");
@@ -70,9 +90,7 @@ const App = () => {
           });
 
       }
-    })
-
-    // setOcrText([]);
+    })    
   }
   const runOcr = () => {
     setIsLoading(true);
@@ -80,9 +98,9 @@ const App = () => {
       Tesseract.recognize(picture, "eng").then(({ data: { text } }) => {
         // setOcrText((old) => (old.concat("\n"+ text)));
         setOcrText((oldarray) => [...oldarray, text]);
-        setPara((s)=>{
-          s.concat('\n'+ ocrText)
-        })
+        console.log(ocrText)
+        setPara(text)
+                  
         setIsLoading(false)
       })
     })
@@ -92,35 +110,10 @@ const App = () => {
 
   return (
     <>
-      <Navbar collapseOnSelect bg="dark" expand="lg" style={{ justifyContent: "space-between" }} variant="dark">
-        <Navbar.Brand href="#home" className="m-3">My OCR APP</Navbar.Brand>
-        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Navbar.Collapse id="responsive-navbar-nav" style={{ flexGrow: 0 }}>
-          <Nav className="ml-auto mr-4">
-            <Nav.Link href="#home" >Home</Nav.Link>
-            <Nav.Link href="#home" >Guide</Nav.Link>
-            <NavDropdown title="More" id="basic-nav-dropdown">
-              <NavDropdown.Item href="#action/3.1">History</NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="#action/3.2">Update Profile</NavDropdown.Item>
-            </NavDropdown>
-            <Nav.Link href="#link" onClick={handleLogout}>Logout</Nav.Link>
-
-          </Nav>
-        </Navbar.Collapse>
-      </Navbar>
+    <NavBar />
+      
       <div className="center">
 
-        {/* <Card>
-            <Card.Body>
-              <h2 className="text-center mb-4">Profile</h2>
-              {error && <Alert variant="danger">{error}</Alert>}
-              <strong>Email:</strong> {currentUser.email}
-              <Link to="/update-profile" className="btn btn-primary w-100 mt-3">
-                Update Profile
-            </Link>
-            </Card.Body>
-         </Card> */}
           {/* <div className="w-100 text-center mt-2">
             <Button variant="link" onClick={handleLogout}>
               Log Out
@@ -158,14 +151,12 @@ const App = () => {
                 </ul>
                 <form>
                   <br />
-                  <button type="submit" onClick={saveText} > <i className="far fa-save save-btn"></i></button>
+                  <button className="save" type="submit" onClick={saveText} > <i className="far fa-save save-btn"></i></button>
                 </form>
               </>
             ) : null
 
         }
-        <button type="submit" onClick={displayText} > Display</button>
-        <SavedItems index={index}/>
       </div>
     </>
   )

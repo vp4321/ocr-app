@@ -3,8 +3,9 @@ import SavedItem from './SavedItem'
 import { Card } from "react-bootstrap"
 import { useAuth } from "../contexts/AuthContext"
 import db from '../firebase'
+import NavBar from './NavBar'
 
-const SavedItems = ({index}) => {
+const SavedItems = () => {
     const { currentUser } = useAuth()
     const [saved, setSaved] = useState([]);
 
@@ -18,53 +19,37 @@ const SavedItems = ({index}) => {
                     .doc(currentUser.uid)
                     .get();                
 
-                    setSaved(res.data().text);
+                    setSaved(res.data().textArr);
                 // setLoading(false);
-
+                    
             } catch (err) {
                 console.error(err);
             }
-            // console.log(saved);
         };
 
         fetchData();
+        
 
     }, [saved]);
 
-        const showSaved = async () => {
-            db.collection('users').doc(currentUser.uid).get().then((res) => {
-                setSaved(res.data().text);
-                console.log(res.data().text);
-            })
-            // await console.log(saved)
-        }
-        const editText = async () => {
-            db.collection('users').doc(currentUser.uid).get().then((res) => {
-                setSaved(res.data().text);
-                console.log(res.data().text);
-            })
-            // await console.log(saved)
-        }
-
-
         return (
-            <div>
                 <>
-                    {/* <button type="submit" onClick={showSaved} > Show</button> */}
-                    {/* <div className="container">
+                    <NavBar />
+                    <h1 style={{textAlign:"center",padding:"2%"}} >
+                        SAVED ITEMS
+                    </h1>
+                    <div className="container">
                         <div className="row">
-                            <div className="col-sm"> */}
                                 {
+                                    
                                         (saved)&&(saved.map((txt) => (
-                                            <SavedItem key={index} txt={txt} index={index}/>
+                                            <SavedItem  key={txt.id} id={txt.id} txt={txt.text} />
                                         )))
                                 }
-                            {/* </div>
                         </div>
-                    </div> */}
+                    </div>
 
                 </>
-            </div>
         )
     }
 

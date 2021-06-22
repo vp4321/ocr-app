@@ -1,17 +1,42 @@
-.my-custom-view-wrapper {
-    display: flex;
-    flex-direction: column;
-    width: 25%;
-    background-color: #3f4257;
-    color: white;
+/* .item{
+    display:flex;
+    position: relative;
+} */
+
+textarea {
+    background: white;
+    border: 0;
+    width: 90%;
+    box-shadow: inset 0 0 5px black;
+    border-radius: 5%;
+    text-align: justify;
     padding: 2%;
+    font-size: small;
 }
 
-.my-custom-view-wrapper div:last-child {
-    /* Here we are styling the button container. */
+textarea:focus {
+    border: none;
+    outline: none;
+}
+
+.del-btn, .save-btn {
+    height: 3rem;
+    width: 3rem;
+    color: aliceblue;
+    background: #3f4257;
+    border-radius: 50%;
     display: flex;
-    flex-direction: row;
-    justify-content: center;
     align-items: center;
-    margin-top: 5px;
+    justify-content: center;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+    cursor: pointer;
+    font-size: 1.5rem;
+}
+
+.delete {
+    color: transparent;
+    border: transparent;
+    background-color: transparent!important;
 }
